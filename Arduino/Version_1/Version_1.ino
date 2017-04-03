@@ -1,7 +1,7 @@
-#define N_TUB 3
+#define N_TUB 1
 
-const int topPins[N_TUB] = {A0, A2, A4};
-const int bottomPins[N_TUB] = {A1, A3, A5};
+const int topPins[N_TUB] = {A1};//, A2};
+const int bottomPins[N_TUB] = {A0};//, A3};
 
 int inverted; // 0 == Upright; 1 == Upside-down
 unsigned long turnStartTime;
@@ -16,10 +16,10 @@ unsigned long topReadings[N_TUB];
 unsigned long bottomReadings[N_TUB];
 int tubesDone[N_TUB];
 
-int stepsPerRev = 48 * 42.5; // reduction factor = 42.5
+unsigned long stepsPerRev = 48 * 42.5; // reduction factor = 42.5
 
 // Run parameters
-int waitTime = 300; // Maximum waiting time (seconds) for a tube
+int waitTime = 90; // Maximum waiting time (seconds) for a tube
 int numTurns = 10; // Number of times to turn the rotor
 
 // Change all current pins to either bottom or top pins
@@ -46,12 +46,19 @@ int reading_done() {
       break;
     }
   }
+  return done;
 }
 
 void read_sensors() {
   for (int i = 0; i < N_TUB; i++) {
     int reading = analogRead(tubePins[i]);
-    if (reading > 590) {
+    if (reading > 570) {
+      /*Serial.print("DEB Detected: ");
+      Serial.print(i);
+      Serial.print(" ");
+      Serial.print(reading);
+      Serial.print(" ");
+      Serial.println(tubePins[i]);*/
       if (tubePins[i] == topPins[i]) {
         if (topReadings[i] == 0) {
           topReadings[i] = millis();
@@ -63,7 +70,7 @@ void read_sensors() {
         }
       } else { // tubePins[i] == bottomPins[i]
         if (bottomReadings[i] == 0) {
-          bottomReadings[i] == millis();
+          bottomReadings[i] = millis();
           if (inverted == 1) {
             tubePins[i] = topPins[i];
           } else {
@@ -83,30 +90,40 @@ void turn_rotor_fwd(unsigned int deg) {
       if (i % 4 == j) { digitalWrite(motorPins[j], LOW); } else { digitalWrite(motorPins[j], HIGH); };
     };
     read_sensors();
-    delay(6);
+    delay(7);
   };
 }
 
 void turn_rotor_rev(unsigned int deg) {
-  int steps = (deg * stepsPerRev) / 360;
+  unsigned long tmp = (deg * stepsPerRev);
+  unsigned int steps = tmp / 360;
+  //Serial.print("DEB ");
+  //Serial.print(deg);
+  //Serial.print(" ");
+  //Serial.print(stepsPerRev);
+  //Serial.print(" ");
+  //Serial.print(tmp);
+  //Serial.print(" ");
+  //Serial.print(steps);
+  //Serial.println(" ");
   for (int i = 0; i < steps; i++) {
     for (int j = 0; j < 4; j++) {
       if (i % 4 == j) { digitalWrite(motorPins[3-j], LOW); } else { digitalWrite(motorPins[3-j], HIGH); };
     };
     read_sensors();
-    delay(6);
+    delay(7);
   };
 }
 
 // Turn the rotor to a known position (a whole rev forward and a fixed rotation backward)
 void initialize_rotor_position() {
-  for (int i = 0; i < stepsPerRev; i++) {
+  for (int i = 0; i < stepsPerRev / 2; i++) {
     for (int j = 0; j < 4; j++) {
       if (i % 4 == j) { digitalWrite(motorPins[j], LOW); } else { digitalWrite(motorPins[j], HIGH); };
     };
     delay(7);
   };
-  for (int i = 0; i < 300; i++) {
+  for (int i = 0; i < 550; i++) {
     for (int j = 0; j < 4; j++) {
       if (i % 4 == j) { digitalWrite(motorPins[3-j], LOW); } else { digitalWrite(motorPins[3-j], HIGH); };
     }
@@ -115,6 +132,10 @@ void initialize_rotor_position() {
 }
 
 void output_results() {
+  Serial.print("DEB ");
+  Serial.print(topReadings[0]);
+  Serial.print(" ");
+  Serial.println(bottomReadings[0]);
   Serial.print("RES ");
   for (int i = 0; i < N_TUB; i++) {
     float res;
@@ -128,6 +149,21 @@ void output_results() {
       res = 0.0;
     }
     Serial.print(res);
+    Serial.print(" ");
+  }
+  Serial.println("");
+}
+
+void debug_write_readings() {
+  Serial.print("DEB ");
+  for (int i = 0; i < N_TUB; i++) {
+    Serial.print(analogRead(topPins[i]));
+    Serial.print(" ");
+  }
+  Serial.println("");
+  Serial.print("DEB ");
+  for (int i = 0; i < N_TUB; i++) {
+    Serial.print(analogRead(bottomPins[i]));
     Serial.print(" ");
   }
   Serial.println("");
@@ -147,20 +183,27 @@ void setup() {
   initialize_rotor_position();
   set_tube_pins(topPins);
   inverted = 1;
+  debug_write_readings();
+  delay(2000);
 }
 
 void loop() {
   reset_readings();
   turnStartTime = millis();
   if (inverted == 1) {
+    Serial.println("DEB Turning rev");
     inverted = 0;
-    turn_rotor_rev(180);
+    turn_rotor_rev(140);
+    Serial.println("DEB Turning rev done");
   } else {
+    Serial.println("DEB Turning fwd");
     inverted = 1;
-    turn_rotor_fwd(180);
+    turn_rotor_fwd(140);
+    Serial.println("DEB Turning fwd done");
   }
-  while (reading_done() == 0 and (millis() - turnStartTime) / 1000 < waitTime) {
+  while (reading_done() == false and (millis() - turnStartTime) / 1000 < waitTime) {
     read_sensors();
   }
   output_results();
+  delay(1000);
 }
