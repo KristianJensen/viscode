@@ -205,5 +205,5 @@ void loop() {
     read_sensors();
   }
   output_results();
-  delay(1000);
+  delay(5000);
 }
