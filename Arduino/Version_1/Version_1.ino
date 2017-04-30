@@ -137,6 +137,8 @@ void output_results() {
   //Serial.print(" ");
   //Serial.println(bottomReadings[0]);
   Serial.print("RES ");
+  Serial.print(inverted);
+  Serial.print(" ");
   for (int i = 0; i < N_TUB; i++) {
     float res;
     if (topReadings[i] != 0 and bottomReadings[i] != 0) {
