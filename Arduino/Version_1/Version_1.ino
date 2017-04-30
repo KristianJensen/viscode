@@ -132,10 +132,10 @@ void initialize_rotor_position() {
 }
 
 void output_results() {
-  Serial.print("DEB ");
-  Serial.print(topReadings[0]);
-  Serial.print(" ");
-  Serial.println(bottomReadings[0]);
+  //Serial.print("DEB ");
+  //Serial.print(topReadings[0]);
+  //Serial.print(" ");
+  //Serial.println(bottomReadings[0]);
   Serial.print("RES ");
   for (int i = 0; i < N_TUB; i++) {
     float res;
