@@ -148,7 +148,7 @@ void output_results() {
         res = (bottomReadings[i] - topReadings[i]) / 1000.;
       }
     } else {
-      res = 0.0;
+      res = -1.0;
     }
     Serial.print(res);
     Serial.print(" ");
