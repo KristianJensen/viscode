@@ -67,9 +67,15 @@ void sensor_baselines() { // Set the baseline values of all sensor pins
     }
     topReadsum = topReadsum / numReads; // Average value
     baselineReads[topPins[i]] = topReadsum;
+    Serial.print("DEB"); Serial.print(" ");
+    Serial.print(topPins[i]), Serial.print(" ");
+    Serial.println(topReadsum);
 
     bottomReadsum = bottomReadsum / numReads;
     baselineReads[bottomPins[i]] = bottomReadsum;
+    Serial.print("DEB"); Serial.print(" ");
+    Serial.print(bottomPins[i]), Serial.print(" ");
+    Serial.println(bottomReadsum);
   }
 }
 
