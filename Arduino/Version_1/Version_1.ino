@@ -131,13 +131,15 @@ void initialize_rotor_position() {
   }
 }
 
-void output_results() {
+void output_results(unsigned long timeStamp) {
   //Serial.print("DEB ");
   //Serial.print(topReadings[0]);
   //Serial.print(" ");
   //Serial.println(bottomReadings[0]);
   Serial.print("RES ");
   Serial.print(inverted);
+  Serial.print(" ");
+  Serial.print(timeStamp);
   Serial.print(" ");
   for (int i = 0; i < N_TUB; i++) {
     float res;
@@ -206,6 +208,6 @@ void loop() {
   while (reading_done() == false and (millis() - turnStartTime) / 1000 < waitTime) {
     read_sensors();
   }
-  output_results();
+  output_results(turnStartTime / 1000);
   delay(5000);
 }
