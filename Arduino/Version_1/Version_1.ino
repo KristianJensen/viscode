@@ -208,6 +208,7 @@ void setup() {
   for (int i = 0; i < 4; i++) {
     pinMode(motorPins[i], OUTPUT);
   }
+  sensor_baselines();
   initialize_rotor_position();
   set_tube_pins(topPins);
   inverted = 1;
