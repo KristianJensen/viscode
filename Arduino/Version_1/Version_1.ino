@@ -1,4 +1,5 @@
 #define N_TUB 1
+#define NUM_PINS 20  // Number of total IO pins on the board 
 
 const int topPins[N_TUB] = {A1};//, A2};
 const int bottomPins[N_TUB] = {A0};//, A3};
@@ -15,6 +16,11 @@ int tubePins[N_TUB];
 unsigned long topReadings[N_TUB];
 unsigned long bottomReadings[N_TUB];
 int tubesDone[N_TUB];
+
+// Pin baseline readings
+int baselineReads[NUM_PINS];
+
+const int threshMargin = 25;  // A pin is considered on if (value > baseline + threshMargin)
 
 unsigned long stepsPerRev = 48 * 42.5; // reduction factor = 42.5
 
@@ -49,10 +55,28 @@ int reading_done() {
   return done;
 }
 
+void sensor_baselines() { // Set the baseline values of all sensor pins
+  int numReads = 3;
+  for (int i = 0; i < N_TUB; i++) {
+    double topReadsum = 0;
+    double bottomReadsum = 0;
+    for (int j = 0; j < numReads; j++) {
+      topReadsum += analogRead(topPins[i]);
+      bottomReadsum += analogRead(bottomPins[i]);
+      delay(1000); // Delay between each reading
+    }
+    topReadsum = topReadsum / numReads; // Average value
+    baselineReads[topPins[i]] = topReadsum;
+
+    bottomReadsum = bottomReadsum / numReads;
+    baselineReads[bottomPins[i]] = bottomReadsum;
+  }
+}
+
 void read_sensors() {
   for (int i = 0; i < N_TUB; i++) {
     int reading = analogRead(tubePins[i]);
-    if (reading > 570) {
+    if (reading > baselineReads[tubePins[i]] + threshMargin) {
       /*Serial.print("DEB Detected: ");
       Serial.print(i);
       Serial.print(" ");
